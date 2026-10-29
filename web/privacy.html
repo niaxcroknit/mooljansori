@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef3fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1526" media="(prefers-color-scheme: dark)">
+<title>물잔소리 개인정보처리방침</title>
+<meta name="description" content="물잔소리 안드로이드 앱의 개인정보처리방침">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+:root{
+  --bg:#eef3fb; --ink:#1b2a44; --muted:#66748e; --line:#d8e1f0; --accent:#3f78dc;
+  --card:rgba(255,255,255,.55); --edge:rgba(255,255,255,.85);
+  --f-display:"Jua","Gowun Dodum",system-ui,sans-serif;
+  --f-body:"Gowun Dodum",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0e1526; --ink:#e6ecf8; --muted:#95a3bf; --line:#26324d; --accent:#8fb8f7;
+  --card:rgba(30,44,76,.5); --edge:rgba(255,255,255,.14); color-scheme:dark}}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+main{max-width:680px;margin:0 auto;padding-inline:20px;padding-block:40px 72px;display:flex;flex-direction:column;gap:32px}
+header{display:flex;flex-direction:column;gap:6px}
+.app{font-family:var(--f-display);color:var(--accent);font-size:16px}
+h1{font-family:var(--f-display);font-weight:400;font-size:30px;line-height:1.25;margin:0;text-wrap:balance}
+.meta{color:var(--muted);font-size:14px}
+.summary{background:var(--card);border:1px solid var(--edge);border-radius:20px;padding:20px 22px;
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.summary p{margin:0}
+section{display:flex;flex-direction:column;gap:10px}
+h2{font-family:var(--f-display);font-weight:400;font-size:20px;margin:0}
+p{margin:0;max-width:65ch}
+ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:400;font-size:13px}
+.tbl{overflow-x:auto}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:18px}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="app">물잔소리</span>
+    <h1>개인정보처리방침</h1>
+    <span class="meta">안드로이드 앱 · 시행일 2026년 10월 29일 (광고 추가에 따라 개정)</span>
+  </header>
+
+  <div class="summary">
+    <p><b>한 줄 요약:</b> 내가 기록한 물·음료 기록은 내 폰 안에만 저장되고 개발자에게 전송되지 않아요. 다만 앱을 무료로 운영하기 위해 화면 아래에 <b>Google AdMob 광고</b>를 보여 주며, 이 과정에서 Google이 광고 ID 같은 기기 정보를 수집할 수 있어요.</p>
+  </div>
+
+  <section>
+    <h2>1. 수집하는 정보</h2>
+    <p>물잔소리 앱(패키지 이름 com.nia.mooljansori)의 개발자는 이름, 이메일, 전화번호 같은 개인정보를 직접 받거나 보관하지 않아요. 회원가입이나 로그인도 없어요. 광고와 관련해 Google이 수집하는 정보는 4번에 적어 두었어요.</p>
+  </section>
+
+  <section>
+    <h2>2. 기기 안에만 저장되는 정보</h2>
+    <p>앱이 동작하려면 아래 내용을 <b>사용자의 기기 안에만</b> 저장해요. 이 내용은 개발자나 다른 누구에게도 전송되지 않아요.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>저장 내용</th><th>쓰는 곳</th></tr></thead>
+        <tbody>
+          <tr><td>마신 시각, 양, 음료 종류</td><td>오늘 마신 양과 최근 7일 그래프 표시</td></tr>
+          <tr><td>하루 목표, 내 컵, 내 음료, 음료별 인정률</td><td>기록 계산과 화면 표시</td></tr>
+          <tr><td>알림 켜기 여부, 간격, 시작·끝 시각, 소리 설정</td><td>물 마시기 알림 예약</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. 사용하는 권한</h2>
+    <ul>
+      <li><b>알림:</b> 정해 둔 시각에 물 마시기 알림을 보내요. 알림은 기기 안에서 예약되며 서버를 거치지 않아요.</li>
+      <li><b>기기 재시작 후 실행:</b> 폰을 껐다 켜도 예약해 둔 알림이 계속 울리게 해요.</li>
+      <li><b>진동:</b> 기록 버튼을 누를 때와 알림이 울릴 때 진동을 써요.</li>
+      <li><b>화면 깨우기:</b> 폰이 잠겨 있어도 정해 둔 시각에 알림이 울리게 해요.</li>
+      <li><b>인터넷·네트워크 상태:</b> 광고를 불러오는 데 써요. 물 기록은 인터넷으로 보내지 않아요.</li>
+      <li><b>광고 ID:</b> Google AdMob이 광고를 보여 주고 효과를 측정하는 데 써요.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4. 광고 (Google AdMob)</h2>
+    <p>물잔소리는 화면 아래에 Google AdMob 배너 광고를 보여 줘요. 광고를 보여 주는 과정에서 Google은 아래 정보를 자동으로 수집해 광고 제공, 광고 효과 분석, 부정 클릭 방지에 사용할 수 있어요. 모든 정보는 암호화되어 전송돼요.</p>
+    <ul>
+      <li>기기 식별자: Android 광고 ID 등</li>
+      <li>IP 주소 (대략적인 위치를 추정하는 데 쓰일 수 있어요)</li>
+      <li>광고와의 상호작용: 광고 노출, 누름 등</li>
+      <li>앱 성능 정보: 오류, 실행 시간 등</li>
+    </ul>
+    <p>물잔소리의 물·음료 기록과 설정은 광고에 쓰이지 않고, Google을 포함한 누구에게도 전송되지 않아요. 개발자는 정보를 판매하지 않아요.</p>
+    <p>광고 맞춤 설정은 폰의 <b>설정 → Google → 광고</b>에서 광고 ID를 재설정하거나 삭제해 끌 수 있어요. 유럽 등 동의가 필요한 지역에서는 앱을 처음 열 때 동의 창이 뜨고, 설정 화면의 <b>광고 개인정보 설정</b>에서 언제든 바꿀 수 있어요. Google의 정보 처리 방식은 <a href="https://policies.google.com/technologies/ads?hl=ko">Google 광고 정책</a>에서 볼 수 있어요.</p>
+  </section>
+
+  <section>
+    <h2>5. 기록 삭제</h2>
+    <ul>
+      <li>앱의 <b>오늘 기록</b>에서 기록을 하나씩 지울 수 있어요.</li>
+      <li>폰 설정에서 물잔소리의 <b>저장공간 → 데이터 삭제</b>를 누르거나 앱을 삭제하면 모든 기록과 설정이 지워져요.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>6. 건강 정보 안내</h2>
+    <p>물잔소리의 음료별 수분 인정률과 술 계산은 습관을 만들기 위한 참고용이며 의학적 조언이 아니에요. 건강 상태에 따라 필요한 수분량이 다르니, 걱정되는 점이 있으면 의료 전문가와 상담하세요.</p>
+  </section>
+
+  <section>
+    <h2>7. 방침 변경과 문의</h2>
+    <p>이 방침이 바뀌면 이 페이지에 바뀐 내용과 시행일을 알려 드려요. 궁금한 점은 Google Play 스토어의 물잔소리 페이지에 적힌 개발자 이메일로 문의해 주세요.</p>
+  </section>
+
+  <footer>물잔소리 · 개발자 nia</footer>
+</main>
+</body>
+</html>

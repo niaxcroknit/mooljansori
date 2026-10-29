@@ -1,0 +1,898 @@
+<title>물잔소리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Outfit:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column — a graduated measuring cylinder is the hero, controls stack beneath it */
+:root{
+  --bg:#eef3fb; --surface:#ffffff; --ink:#1b2a44; --muted:#66748e; --line:#d8e1f0;
+  --accent:#3f78dc; --accent-ink:#ffffff; --water:#a9cdf5; --water-deep:#6ea6ec; --glass:#f7faff;
+  --warn:#b4591c; --good:#1f8a5b; --cup-bg:#e9f1fc; --cup-bg-hi:#dde8fa; --accent-deep:#2d5fb8;
+  --g-bg:rgba(255,255,255,.42); --g-bg-hi:rgba(255,255,255,.62); --g-field:rgba(255,255,255,.55);
+  --g-edge:rgba(255,255,255,.75); --g-hi:rgba(255,255,255,.95); --g-lo:rgba(255,255,255,.25); --g-shadow:rgba(40,70,130,.12);
+  --orb1:#aecffa; --orb2:#d4dcff; --orb3:#bfe6fb;
+  --f-display:"Jua","Gowun Dodum",system-ui,sans-serif;
+  --f-body:"Gowun Dodum",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"Outfit","Gowun Dodum",system-ui,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1526; --surface:#151f36; --ink:#e6ecf8; --muted:#95a3bf; --line:#26324d;
+  --accent:#8fb8f7; --accent-ink:#0c1a33; --water:#4a78c4; --water-deep:#8ab4f5; --glass:#111a2e;
+  --warn:#e39a62; --good:#5cc995; --cup-bg:#18233d; --cup-bg-hi:#1f2c4a; --accent-deep:#5a88d6;
+  --g-bg:rgba(30,44,76,.42); --g-bg-hi:rgba(46,64,104,.5); --g-field:rgba(12,20,38,.45);
+  --g-edge:rgba(255,255,255,.14); --g-hi:rgba(255,255,255,.22); --g-lo:rgba(255,255,255,.04); --g-shadow:rgba(0,0,0,.35);
+  --orb1:#1d3f7a; --orb2:#2c2f6e; --orb3:#164a6b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1526; --surface:#151f36; --ink:#e6ecf8; --muted:#95a3bf; --line:#26324d;
+  --accent:#8fb8f7; --accent-ink:#0c1a33; --water:#4a78c4; --water-deep:#8ab4f5; --glass:#111a2e;
+  --warn:#e39a62; --good:#5cc995; --cup-bg:#18233d; --cup-bg-hi:#1f2c4a; --accent-deep:#5a88d6;
+  --g-bg:rgba(30,44,76,.42); --g-bg-hi:rgba(46,64,104,.5); --g-field:rgba(12,20,38,.45);
+  --g-edge:rgba(255,255,255,.14); --g-hi:rgba(255,255,255,.22); --g-lo:rgba(255,255,255,.04); --g-shadow:rgba(0,0,0,.35);
+  --orb1:#1d3f7a; --orb2:#2c2f6e; --orb3:#164a6b; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+/* glass system: colored light behind, frosted surfaces with a bright top edge in front */
+/* Background glow. iOS Safari paints its status bar and toolbar with the colour of any FIXED element touching the screen edge,
+   so the glow scrolls with the page (absolute, gradients only, no background-color) and the plain --bg shows at the very top. */
+html{background:var(--bg)}
+body{position:relative;min-height:100vh}
+.orbs{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background-image:
+    radial-gradient(60vmax 55vmax at 5% 260px,color-mix(in srgb,var(--orb1) 85%,transparent),transparent 70%),
+    radial-gradient(50vmax 50vmax at 105% 55%,color-mix(in srgb,var(--orb2) 80%,transparent),transparent 70%),
+    radial-gradient(55vmax 45vmax at 30% 100%,color-mix(in srgb,var(--orb3) 80%,transparent),transparent 70%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,transparent calc(env(safe-area-inset-top,0px) + 6px),#000 calc(env(safe-area-inset-top,0px) + 150px));
+  mask-image:linear-gradient(to bottom,transparent 0,transparent calc(env(safe-area-inset-top,0px) + 6px),#000 calc(env(safe-area-inset-top,0px) + 150px))}
+.glass,.panel,.cup,.custom input{background:var(--g-bg);-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+  border:1px solid var(--g-edge);box-shadow:inset 0 1px 0 var(--g-hi),inset 0 -1px 0 var(--g-lo),0 10px 30px -12px var(--g-shadow)}
+.app{position:relative;z-index:1;max-width:460px;margin:0 auto;padding-inline:16px;padding-block:24px 64px;display:flex;flex-direction:column;gap:36px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+h1{font-family:var(--f-display);font-weight:400;font-size:30px;margin:0;letter-spacing:-.5px}
+.date{font-family:var(--f-body);font-size:15px;color:var(--muted);letter-spacing:.01em}
+h2{font-family:var(--f-display);font-weight:400;font-size:19px;margin:0}
+.muted{color:var(--muted)}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+
+/* banner */
+.banner{background:color-mix(in srgb,var(--accent) 82%,transparent);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 12px 30px -12px var(--g-shadow);border-radius:20px;color:var(--accent-ink);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.banner strong{font-family:var(--f-display);font-weight:400;font-size:20px}
+.banner .row{display:flex;gap:8px;flex-wrap:wrap}
+.banner button{background:var(--accent-ink);color:var(--accent);border:0}
+.banner button.ghost{background:transparent;color:var(--accent-ink);border:1px solid currentColor}
+
+/* hero */
+.hero{--cyl-h:124px;display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:end}
+.cyl-wrap{display:flex;gap:6px;align-items:stretch}
+.cyl{display:block;height:var(--cyl-h);width:auto;aspect-ratio:72/116;overflow:visible;filter:drop-shadow(0 12px 16px var(--g-shadow))}
+.gl-body{fill:var(--g-bg);stroke:var(--g-edge);stroke-width:1}
+.gl-cavity{fill:none;stroke:var(--g-hi);stroke-width:.6;opacity:.5}
+.gl-base{fill:var(--g-hi);opacity:.38}
+.gl-rim{stroke:var(--g-hi);stroke-width:2.2;stroke-linecap:round;fill:none}
+.gl-shine{fill:none;stroke-linecap:round}
+.water{transition:transform .9s cubic-bezier(.3,.7,.2,1),opacity .4s}
+.water .w1{fill:var(--water);opacity:.9;animation:wave 3.2s linear infinite}
+.water .w2{fill:var(--water-deep);opacity:.35;animation:wave 4.6s linear infinite reverse}
+.water .surf{fill:none;stroke:var(--g-hi);stroke-width:.8;opacity:.8;animation:wave 3.2s linear infinite}
+.water .waves{transform-origin:0 0}
+.water .waves.slosh{animation:slosh 0.8s ease-out}
+.water .bub{fill:var(--g-hi);opacity:0;animation:bub 3.6s ease-in infinite}
+.water .bub:nth-of-type(2){animation-delay:1.2s;animation-duration:4.2s}
+.water .bub:nth-of-type(3){animation-delay:2.3s;animation-duration:3.1s}
+@keyframes wave{to{transform:translateX(-36px)}}
+@keyframes bub{0%{transform:translateY(0);opacity:0}15%{opacity:.8}85%{opacity:.6}100%{transform:translateY(-34px);opacity:0}}
+.ticks{position:relative;width:40px;height:var(--cyl-h)}
+.tick{position:absolute;left:0;display:flex;align-items:center;gap:4px;transform:translateY(50%);font-family:var(--f-data);font-size:9.5px;color:var(--muted)}
+.tick i{display:block;width:8px;height:1px;background:var(--muted)}
+.tick.goal{color:var(--accent);font-weight:500}
+.tick.goal i{width:14px;background:var(--accent);height:2px}
+.stats{display:flex;flex-direction:column;gap:10px;min-width:0}
+.big{font-family:var(--f-display);font-size:46px;line-height:1;letter-spacing:-1px}
+.big small{font-family:var(--f-data);font-size:16px;color:var(--muted);margin-left:4px;letter-spacing:0}
+.pct{display:inline-flex;align-self:flex-start;font-family:var(--f-data);font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--g-edge);background:var(--g-bg);color:var(--muted)}
+.pct.done{border-color:var(--good);color:var(--good)}
+.remain{font-size:14px}
+
+/* buttons */
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border-radius:10px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);transition:transform .08s,background .15s}
+button:active{transform:scale(.97)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.kinds{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-2px;padding:2px 20px 2px 2px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}
+.kinds::-webkit-scrollbar{display:none}
+.kind{flex:none;border-radius:999px;padding:9px 16px;font-size:13px;background:var(--g-bg);border:1px solid var(--g-edge);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:var(--ink);transition:background .15s,color .15s}
+.kind[aria-checked="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.kind.alc[aria-checked="true"]{background:var(--warn);color:#fff}
+.kind.more{border-style:dashed;color:var(--accent)}
+.sub-h{font-size:13px;color:var(--ink);font-weight:600}
+.my-drinks{display:flex;flex-direction:column;gap:12px;padding-top:18px;border-top:1px solid var(--g-edge)}
+.drink-row,.drink-add{display:grid;grid-template-columns:minmax(0,1fr) 76px auto;gap:10px;align-items:center}
+.drink-row input,.drink-add input{width:100%;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--g-field);color:var(--ink)}
+.drink-row input[type=number],.drink-add input[type=number]{font-family:var(--f-data)}
+.drink-row button{padding:6px 10px;color:var(--warn);font-size:13px}
+.drink-add .primary{padding:8px 14px;border-radius:10px}
+.suggest{display:flex;flex-wrap:wrap;gap:8px}
+.suggest button{border-radius:999px;padding:5px 11px;font-size:12px;background:var(--g-field);border:1px dashed var(--g-edge);color:var(--muted)}
+.suggest button b{font-family:var(--f-data);font-weight:500;color:var(--accent);margin-left:4px}
+.empty-note{font-size:12.5px;color:var(--muted)}
+.kind-hint{margin:0;font-size:12.5px;color:var(--muted)}
+.kind-hint b{color:var(--warn);font-weight:600}
+.cup .sub{font-size:12px;color:var(--muted);margin-top:-10px}
+.cup.alc .add{background:var(--warn);color:#fff}
+.alc-note{font-size:13px;color:var(--warn)}
+.log .a small{font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}
+.log .a small.alc{color:var(--warn)}
+.log .kd{font-family:var(--f-body);font-weight:400;font-size:12px;padding:1px 7px;border-radius:999px;background:var(--g-field);border:1px solid var(--g-edge);margin-right:6px;color:var(--muted)}
+.cups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cup{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:20px;padding:18px 18px 20px;border-radius:22px;
+  text-align:left;transition:transform .18s cubic-bezier(.3,.7,.3,1.3),background .15s}
+.cup:active{transform:scale(.96)}
+.cup:last-child:nth-child(odd){grid-column:1/-1}
+.cup .top{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0}
+.cup .lbl{font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cup .add{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 10px -3px color-mix(in srgb,var(--accent) 60%,transparent)}
+.cup .add svg{width:12px;height:12px;display:block}
+.cup .ml{font-family:var(--f-num);font-weight:600;font-size:26px;line-height:1;letter-spacing:-.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.cup .ml small{font-size:13px;font-weight:500;color:var(--muted);margin-left:3px;letter-spacing:0}
+.link{background:none;border:0;padding:4px 2px;color:var(--accent);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.cup-editor{display:flex;flex-direction:column;gap:14px}
+.ce-head,.ce-row{display:grid;grid-template-columns:1fr 92px 40px;gap:8px;align-items:center}
+.ce-head{font-size:11px;color:var(--muted)}
+.ce-rows{display:flex;flex-direction:column;gap:10px}
+.ce-row input{width:100%;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--g-field);color:var(--ink)}
+.ce-row input[type=number]{font-family:var(--f-data)}
+.ce-row button{padding:6px 0;color:var(--warn);font-size:13px}
+.ce-actions{display:flex;gap:8px;justify-content:flex-end}
+#cup-add{align-self:flex-start;border-style:dashed}
+.custom{display:flex;gap:12px}
+.custom .primary{border-radius:16px;padding:12px 22px;font-weight:600;border:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 8px 20px -8px color-mix(in srgb,var(--accent) 70%,transparent);transition:transform .18s cubic-bezier(.3,.7,.3,1.3)}
+.custom .primary:active{transform:scale(.96)}
+.custom input{flex:1;min-width:0;padding:12px 16px;border-radius:16px;font-family:var(--f-num);font-size:15px}
+.custom input:focus{border-color:var(--accent);outline:none;background:var(--g-bg-hi)}
+
+section{display:flex;flex-direction:column;gap:16px}
+/* ---- 지난 기록 ---- */
+.more-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:13px;text-decoration:none;padding:4px 2px}
+.more-link svg{width:7px;height:11px}
+.week-avg{margin:14px 0 0;font-size:12.5px;text-align:right}
+.week-avg:empty{display:none}
+.history{position:fixed;inset:0;z-index:70;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);
+  background-image:radial-gradient(60vmax 50vmax at 100% 0,color-mix(in srgb,var(--orb2) 60%,transparent),transparent 70%);
+  padding-top:var(--safe-area-inset-top, env(safe-area-inset-top,0px));padding-bottom:var(--safe-area-inset-bottom, env(safe-area-inset-bottom,0px));
+  animation:hist-in .28s cubic-bezier(.2,.8,.3,1)}
+@keyframes hist-in{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+.hist-inner{max-width:460px;margin:0 auto;padding-inline:16px;padding-block:20px 64px;display:flex;flex-direction:column;gap:24px}
+.hist-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center}
+.hist-head h2{text-align:center;font-size:21px}
+.hist-back{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:var(--g-bg);border:1px solid var(--g-edge);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.hist-back svg{width:10px;height:16px}
+.hist-cal{display:flex;flex-direction:column;gap:14px}
+.month-nav{display:flex;align-items:center;justify-content:space-between}
+.month-nav strong{font-family:var(--f-display);font-weight:400;font-size:19px}
+.month-nav button{width:40px;height:40px;border-radius:50%;padding:0;font-size:22px;line-height:1;background:var(--g-field);border:1px solid var(--g-edge);color:var(--ink)}
+.month-nav button:disabled{opacity:.3;cursor:default}
+.m-sum{margin:-4px 0 4px;text-align:center;font-size:13px;color:var(--muted)}
+.cal-dow,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.cal-dow span{font-size:11.5px;color:var(--muted)}
+.cal-dow span:first-child{color:var(--warn)}
+.cal-day{aspect-ratio:1/1.12;border-radius:14px;border:1px solid transparent;background:none;padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  color:var(--ink);font-family:var(--f-num);font-size:13px;font-variant-numeric:tabular-nums;min-width:0}
+.cal-day.empty{visibility:hidden}
+.cal-day.future{color:var(--muted);opacity:.45;cursor:default}
+.cal-day.today{border-color:var(--accent)}
+.cal-day.sel{background:color-mix(in srgb,var(--accent) 16%,var(--g-bg-hi));border-color:color-mix(in srgb,var(--accent) 45%,transparent);box-shadow:inset 0 1px 0 var(--g-hi);font-weight:700}
+.cal-day.today:not(.sel){border-style:dashed}
+.lv{display:block;width:12px;height:15px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;background:var(--line)}
+.lv-met{background:var(--water-deep)}
+.lv-some{background:color-mix(in srgb,var(--water) 70%,transparent)}
+.lv-none{background:transparent;border:1.5px dashed var(--line)}
+.cal-day .lv{width:11px;height:14px}
+.cal-legend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);padding-top:4px}
+.cal-legend span{display:inline-flex;align-items:center;gap:6px}
+.cal-legend .lv{width:9px;height:12px}
+.hist-day{display:flex;flex-direction:column;gap:14px}
+.hist-day .day-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hist-day .day-total{font-family:var(--f-num);font-weight:600;font-size:15px}
+.hist-day .day-total.met{color:var(--good)}
+@media (prefers-reduced-motion: reduce){.history{animation:none}}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.panel{border-radius:22px;padding:20px 22px}
+
+/* log */
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.log li{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:12px;padding:14px 0;border-bottom:1px dashed var(--line)}
+.log li:last-child{border-bottom:0}
+.log .t{font-family:var(--f-data);font-size:13px;color:var(--muted)}
+.log .a{font-family:var(--f-data);font-weight:500}
+.log button{padding:4px 10px;font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+
+/* week */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:160px;position:relative}
+.goal-line{position:absolute;left:0;right:0;border-top:1px dashed var(--accent);pointer-events:none}
+.goal-line span{position:absolute;right:0;top:-16px;font-family:var(--f-data);font-size:10px;color:var(--accent)}
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
+.bar b{display:block;width:100%;max-width:28px;border-radius:6px 6px 2px 2px;background:var(--water);min-height:2px}
+.bar.met b{background:var(--water-deep)}
+.bar.today b{outline:2px solid var(--accent);outline-offset:1px}
+.bar span{font-size:11px;line-height:18px;height:18px;color:var(--muted)}
+.bar em{font-style:normal;font-family:var(--f-data);font-size:10px;color:var(--muted)}
+
+/* reminder */
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toggle{width:52px;height:30px;border-radius:999px;padding:0;position:relative;background:var(--g-field);border:1px solid var(--g-edge);box-shadow:inset 0 1px 3px var(--g-shadow);flex:none}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:left .2s}
+.toggle[aria-checked="true"]{background:var(--accent)}
+.toggle[aria-checked="true"]::after{left:25px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px}
+label.f{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--muted);min-width:0}
+label.f select,label.f input{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--g-field);font-family:var(--f-data);font-size:16px;color:var(--ink);width:100%;min-width:0;max-width:100%;display:block;box-sizing:border-box}
+/* iPhone Safari gives time inputs a fixed intrinsic width; strip native chrome so they fit their column */
+label.f input[type=time]{-webkit-appearance:none;appearance:none;min-height:40px;line-height:22px;text-align:left}
+label.f input[type=time]::-webkit-date-and-time-value{text-align:left;margin:0}
+label.f input[type=time]::-webkit-datetime-edit{padding:0}
+.next{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.next .num{font-size:18px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px}
+.note{font-size:12.5px;color:var(--muted);line-height:1.7}
+.status{font-size:12px;color:var(--muted);text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:color-mix(in srgb,var(--ink) 78%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:var(--bg);padding:9px 18px;z-index:60;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis;border-radius:999px;font-size:13px;opacity:0;transition:opacity .2s,visibility .2s;pointer-events:none}
+.toast{visibility:hidden}
+.toast.has-undo{display:flex;align-items:center;gap:12px;pointer-events:auto;padding-right:8px}
+.toast .undo{background:none;border:0;color:var(--water);font:inherit;font-weight:600;padding:4px 10px;border-radius:999px;cursor:pointer}
+.toast .undo:focus-visible{outline:2px solid var(--water);outline-offset:1px}
+.toast.show{opacity:1;visibility:visible}
+/* responsive: phone = one column; tablet = cylinder column + details; wide desktop = three columns */
+.cols,.col-a,.col-b,.col-b1,.col-b2{display:flex;flex-direction:column;gap:36px;min-width:0}
+@media (hover:hover){.cup:hover{background:var(--g-bg-hi)} button:not(.cup):not(.primary):not(.toggle):hover{border-color:var(--accent)}}
+@media (min-width:760px){
+  .app{max-width:980px;padding-inline:32px;padding-block:36px 72px;gap:40px}
+  h1{font-size:36px}
+  .cols{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:48px;align-items:start}
+  .col-a{position:sticky;top:calc(24px + env(safe-area-inset-top,0px))}
+  .hero{grid-template-columns:auto 1fr}
+  .hero{--cyl-h:208px}
+  .big{font-size:60px}
+  .week{height:170px}
+}
+@media (min-width:1180px){
+  .app{max-width:1320px}
+  .col-b{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:start}
+  .hero{--cyl-h:240px}
+}
+.cup,.custom button,#banner-drink{position:relative}
+.fx{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:3}
+.fx .drop{position:absolute;left:0;top:0;display:block;border-radius:50%;background:var(--accent);opacity:0}
+@keyframes slosh{0%{transform:scaleY(1)}25%{transform:scaleY(2.6)}55%{transform:scaleY(.5)}80%{transform:scaleY(1.5)}100%{transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}.water .w1,.water .w2,.water .surf,.water .bub,.water .waves.slosh{animation:none}}
+</style>
+
+<div class="orbs" aria-hidden="true"></div>
+<div class="app">
+  <header>
+    <h1 class="sr-only">물잔소리</h1>
+    <span class="date" id="today-label"></span>
+  </header>
+
+  <div class="banner" id="banner" hidden role="alert">
+    <strong>물 좀 마셔!</strong>
+    <span id="banner-sub">마지막으로 마신 지 조금 지났어요.</span>
+    <div class="row">
+      <button id="banner-drink">한 컵 마셨어요</button>
+      <button class="ghost" id="banner-snooze">10분만 이따가</button>
+    </div>
+  </div>
+
+  <div class="cols">
+  <div class="col-a">
+  <div class="hero">
+    <div class="cyl-wrap" aria-hidden="true">
+      <svg class="cyl" viewBox="0 0 72 116" role="img" aria-label="오늘 마신 물의 양">
+        <defs>
+          <clipPath id="cavity"><path d="M5.8 7 H66.2 L60.9 97 Q60.7 100 57.8 100 H14.2 Q11.3 100 11.1 97 Z"/></clipPath>
+          <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--water)"/><stop offset="1" style="stop-color:var(--water-deep)"/></linearGradient>
+          <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--g-hi);stop-opacity:.95"/><stop offset="1" style="stop-color:var(--g-hi);stop-opacity:0"/></linearGradient>
+        </defs>
+        <path class="gl-body" d="M3 5 H69 L63 107 Q62.6 112 57.6 112 H14.4 Q9.4 112 9 107 Z"/>
+        <g clip-path="url(#cavity)">
+          <g class="water" id="water" style="transform:translateY(100px);opacity:0">
+            <rect x="0" y="1" width="72" height="120" fill="url(#wg)"/>
+            <g class="waves" id="waves">
+              <path class="w2" d="M0 1 Q9 -1.6 18 1 T36 1 T54 1 T72 1 T90 1 T108 1 T126 1 T144 1 V5 H0Z"/>
+              <path class="w1" d="M0 0 Q9 2 18 0 T36 0 T54 0 T72 0 T90 0 T108 0 T126 0 T144 0 V5 H0Z"/>
+              <path class="surf" d="M0 0 Q9 2 18 0 T36 0 T54 0 T72 0 T90 0 T108 0 T126 0 T144 0"/>
+            </g>
+            <circle class="bub" cx="22" cy="40" r="1.3"/><circle class="bub" cx="44" cy="46" r="1"/><circle class="bub" cx="33" cy="38" r="1.6"/>
+          </g>
+        </g>
+        <path class="gl-cavity" d="M5.8 7 H66.2 L60.9 97 Q60.7 100 57.8 100 H14.2 Q11.3 100 11.1 97 Z"/>
+        <path class="gl-base" d="M11.4 101.5 H60.6 L62.4 106 Q62.2 110.2 57.6 110.2 H14.4 Q9.8 110.2 9.6 106 Z"/>
+        <ellipse cx="36" cy="106.2" rx="17" ry="1.1" style="fill:var(--g-hi)" opacity=".7"/>
+        <path class="gl-shine" d="M8.6 13 L13 92" stroke="url(#shine)" stroke-width="3.2"/>
+        <path class="gl-shine" d="M63.4 14 L60.6 60" stroke="url(#shine)" stroke-width="1.2" opacity=".7"/>
+        <path class="gl-rim" d="M3.6 5 H68.4"/>
+      </svg>
+      <div class="ticks" id="ticks"></div>
+    </div>
+    <div class="stats">
+      <div class="big"><span id="total">0</span><small>ml</small></div>
+      <span class="pct" id="pct">목표 2,000 ml의 0%</span>
+      <span class="remain muted" id="remain"></span>
+      <span class="alc-note" id="alc-note" hidden></span>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>내 컵</h2><button class="link" id="cups-edit-btn" aria-expanded="false">컵 편집</button></div>
+    <div class="kinds" id="kinds" role="radiogroup" aria-label="마신 음료"></div>
+    <p class="kind-hint" id="kind-hint" hidden></p>
+    <div class="cups" id="cups"></div>
+    <div class="panel cup-editor" id="cup-editor" hidden>
+      <div class="ce-head"><span>이름</span><span>용량 (ml)</span><span></span></div>
+      <div id="cup-rows" class="ce-rows"></div>
+      <button type="button" id="cup-add">+ 컵 추가</button>
+      <p class="note" style="margin:0">용량을 모르겠다면 컵에 물을 가득 채운 뒤 계량컵이나 500 ml 생수병에 옮겨 부어 재 보세요. 텀블러는 바닥이나 포장에 용량이 적혀 있는 경우가 많아요.</p>
+      <div class="ce-actions"><button type="button" id="cup-cancel">취소</button><button type="button" class="primary" id="cup-save">저장</button></div>
+    </div>
+    <form class="custom" id="custom-form">
+      <input id="custom-ml" type="number" inputmode="numeric" min="10" max="2000" step="10" placeholder="직접 입력 (ml)" aria-label="직접 입력한 양 (ml)">
+      <button class="primary" type="submit">기록</button>
+    </form>
+  </section>
+  </div>
+
+  <div class="col-b">
+  <div class="col-b1">
+  <section>
+    <div class="sec-head"><h2>오늘 기록</h2><span class="muted num" id="count" style="font-size:12px"></span></div>
+    <div class="panel"><ul class="log" id="log"></ul></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>최근 7일</h2><a class="more-link" href="#history" id="open-history">지난 기록 보기<svg viewBox="0 0 8 12" aria-hidden="true"><path d="M2 1.5 6.5 6 2 10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    <div class="panel"><div class="week" id="week"></div><p class="week-avg muted" id="week-avg"></p></div>
+  </section>
+  </div>
+
+  <div class="col-b2">
+  <section>
+    <h2>물 마시기 알림</h2>
+    <div class="panel" style="display:flex;flex-direction:column;gap:20px">
+      <div class="switch">
+        <div><div>알림 켜기</div><div class="note">마지막으로 마신 시각부터 간격을 셉니다.</div></div>
+        <button class="toggle" id="rem-toggle" role="switch" aria-checked="false" aria-label="알림 켜기"></button>
+      </div>
+      <div class="grid2">
+        <label class="f">간격
+          <select id="rem-interval">
+            <option value="30">30분</option><option value="45">45분</option><option value="60">1시간</option>
+            <option value="90">1시간 30분</option><option value="120">2시간</option>
+          </select>
+        </label>
+        <label class="f">알림에서 기록할 컵
+          <select id="cup-default"></select>
+        </label>
+        <label class="f">시작 시각<input type="time" id="rem-start" value="08:00"></label>
+        <label class="f">종료 시각<input type="time" id="rem-end" value="22:00"></label>
+        <label class="f" style="grid-column:1/-1">하루 목표
+          <select id="goal">
+            <option value="1500">1,500 ml</option><option value="1800">1,800 ml</option><option value="2000">2,000 ml</option>
+            <option value="2500">2,500 ml</option><option value="3000">3,000 ml</option><option value="custom">직접 입력</option>
+          </select>
+          <input id="goal-custom" type="number" inputmode="numeric" min="500" max="6000" step="50" placeholder="예: 1700" aria-label="하루 목표 직접 입력 (ml)" hidden>
+        </label>
+      </div>
+      <label class="chk"><input type="checkbox" id="rem-sound" checked> 알림 소리 켜기</label>
+      <div class="next">
+        <span class="muted" style="font-size:13px">다음 알림</span>
+        <span class="num" id="next-at">꺼짐</span>
+      </div>
+      <button id="notif-btn" hidden>브라우저 알림 허용하기</button>
+      <p class="note" style="margin:0">알림은 이 페이지가 열려 있을 때 울려요. 휴대폰에서는 탭을 열어 두세요.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="drinks-title">음료별 수분 인정률</h2>
+    <div class="panel" style="display:flex;flex-direction:column;gap:18px">
+      <p class="note" style="margin:0">물 대신 마신 음료는 이 비율만큼만 물로 쳐요. 적당량의 커피·차도 수분을 채워 주지만, 넉넉히 잡으려고 조금 낮게 설정해 뒀어요.</p>
+      <div class="grid2" id="rates">
+        <label class="f">커피 (%)<input type="number" inputmode="numeric" min="0" max="100" step="5" id="rate-coffee"></label>
+        <label class="f">차 (%)<input type="number" inputmode="numeric" min="0" max="100" step="5" id="rate-tea"></label>
+        <label class="f">우유 (%)<input type="number" inputmode="numeric" min="0" max="100" step="5" id="rate-milk"></label>
+        <label class="f">주스·탄산 (%)<input type="number" inputmode="numeric" min="0" max="100" step="5" id="rate-juice"></label>
+      </div>
+      <div class="my-drinks">
+        <div class="sub-h">내 음료</div>
+        <div id="drink-rows" class="ce-rows"></div>
+        <form class="drink-add" id="drink-add">
+          <input type="text" id="drink-name" maxlength="10" placeholder="음료 이름 (예: 콤부차)" aria-label="음료 이름">
+          <input type="number" id="drink-rate" inputmode="numeric" min="0" max="100" step="5" value="90" aria-label="수분 인정률 (%)">
+          <button type="submit" class="primary">추가</button>
+        </form>
+        <div class="suggest" id="drink-suggest"></div>
+      </div>
+      <p class="note" style="margin:0"><b>술</b>은 마신 만큼 그대로 물에서 빼요. 실제로 빠지는 수분은 도수에 따라 달라요. 소주나 위스키처럼 독한 술은 비슷하거나 더 많이 빠지고, 맥주처럼 약한 술은 거의 빠지지 않아요. 여기서는 "술 마신 만큼 물 더 마시기"를 기억하기 쉽게 1:1로 계산해요.</p>
+    </div>
+  </section>
+
+  </div>
+  </div>
+  </div>
+
+  <p class="status" id="status">불러오는 중…</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<!-- 지난 기록 (1뎁스 화면) -->
+<div class="history" id="history" hidden role="dialog" aria-modal="true" aria-labelledby="hist-title">
+  <div class="hist-inner">
+    <header class="hist-head">
+      <a class="hist-back" href="#" id="hist-back" aria-label="뒤로"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <h2 id="hist-title">지난 기록</h2>
+      <span class="hist-spacer"></span>
+    </header>
+    <div class="panel hist-cal">
+      <div class="month-nav">
+        <button type="button" id="m-prev" aria-label="지난달">‹</button>
+        <strong id="m-label"></strong>
+        <button type="button" id="m-next" aria-label="다음 달">›</button>
+      </div>
+      <p class="m-sum" id="m-sum"></p>
+      <div class="cal-dow" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend" aria-hidden="true"><span><i class="lv lv-met"></i>목표 달성</span><span><i class="lv lv-some"></i>조금 마심</span><span><i class="lv lv-none"></i>기록 없음</span></div>
+    </div>
+    <section class="hist-day" id="hist-day" aria-live="polite"></section>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,'0');
+  const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const fmt = n => n.toLocaleString('ko-KR');
+  const DAYS = ['일','월','화','수','목','금','토'];
+
+  const DEFAULT_RATES = {coffee:80, tea:90, milk:100, juice:80};
+  const KINDS = [{id:'water',name:'물'},{id:'coffee',name:'커피'},{id:'tea',name:'차'},{id:'milk',name:'우유'},{id:'juice',name:'주스·탄산'},{id:'alcohol',name:'술'}];
+  const customs = () => Array.isArray(state.settings.drinks) ? state.settings.drinks : [];
+  const allKinds = () => [...KINDS.slice(0,5), ...customs(), KINDS[5]];
+  const kindName = id => (allKinds().find(k => k.id === id) || KINDS[0]).name;
+  const SUGGEST = [{name:'믹스커피',rate:90},{name:'라떼',rate:90},{name:'디카페인',rate:95},{name:'콤부차',rate:95},{name:'탄산수',rate:100},{name:'이온음료',rate:100},{name:'보리차',rate:100},{name:'두유',rate:100},{name:'스무디',rate:80},{name:'에너지드링크',rate:60}];
+  const DEFAULT_SETTINGS = {rates:{...DEFAULT_RATES}, goal:2000, cup:300, remOn:false, interval:60, start:'08:00', end:'22:00', sound:true};
+  const state = {kind:'water', settings:{...DEFAULT_SETTINGS}, days:{}, snoozeUntil:0, lastRemindAt:0};
+
+  /* ---------- storage: db (per-viewer private) with localStorage fallback ---------- */
+  let col = null; const LS = 'hanmogeum-v1';
+  function lsLoad(){ try{ const raw = localStorage.getItem(LS); if(raw){ const o = JSON.parse(raw); Object.assign(state.settings, o.settings||{}); state.days = o.days||{}; } }catch(e){} }
+  function lsSave(){ try{ localStorage.setItem(LS, JSON.stringify({settings:state.settings, days:state.days})); }catch(e){} }
+
+  const queues = {};
+  function writeDoc(id, body){
+    lsSave();
+    if(!col) return;
+    const prev = queues[id] || Promise.resolve();
+    queues[id] = prev.then(() => col.doc(id).set(body)).catch(e => {
+      if(e && e.code === 'quota_exceeded') toast('저장 공간이 가득 찼어요');
+      else toast('저장하지 못했어요. 잠시 뒤 다시 시도해 주세요');
+    });
+  }
+  const saveDay = k => writeDoc('d'+k, {date:k, entries:state.days[k]||[]});
+  const saveSettings = () => writeDoc('settings', {...state.settings});
+
+  async function connect(){
+    lsLoad(); render(); if(location.hash === '#history') openHistory();
+    if(!window.claude || !window.claude.use){ $('status').textContent = '이 브라우저에만 저장돼요'; return; }
+    try{
+      const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
+      const uid = user ? await user.id() : null;
+      if(!db || !uid){ $('status').textContent = '이 브라우저에만 저장돼요'; return; }
+      col = db.collection('data/users/' + uid);
+      let first = true;
+      col.onSnapshot(snap => {
+        const days = {}; let settings = null;
+        snap.docs.forEach(d => { const v = d.data(); if(!v) return;
+          if(d.id === 'settings') settings = v;
+          else if(v.date) days[v.date] = Array.isArray(v.entries) ? v.entries.slice() : []; });
+        if(first && snap.empty && Object.keys(state.days).length){
+          // move anything saved in this browser into the account on first connect
+          Object.keys(state.days).forEach(saveDay); saveSettings();
+        } else {
+          state.days = days; if(settings) state.settings = {...DEFAULT_SETTINGS, ...settings};
+        }
+        first = false;
+        $('status').textContent = '내 계정에 저장돼요 · 다른 기기에서도 이어서 볼 수 있어요';
+        lsSave(); render();
+      }, () => { $('status').textContent = '연결이 끊겼어요. 새로고침하면 다시 이어져요'; });
+    }catch(e){ $('status').textContent = '이 브라우저에만 저장돼요'; }
+  }
+
+  /* ---------- actions ---------- */
+  const PRAISE = ['그렇지, 잘했어','옳지, 한 잔 더 가자','이제야 말을 듣네','착하다, 계속 그렇게 마셔','좋아, 방금 건 인정','피부가 고마워하는 중'];
+  // hydration math: every entry counts `credit` ml toward water; alcohol subtracts its full volume
+  const rateOf = kind => kind === 'water' ? 100 : kind === 'alcohol' ? 0 : kind.startsWith('c_') ? ((customs().find(c => c.id === kind)||{}).rate ?? 100) : Math.max(0, Math.min(100, Number((state.settings.rates||DEFAULT_RATES)[kind] ?? DEFAULT_RATES[kind] ?? 100)));
+  const creditOf = e => e.kind === 'alcohol' ? -e.ml : e.credit != null ? e.credit : e.ml;
+  const extraOf = () => 0;
+  function dayStats(k){ const a = state.days[k]||[]; return {credit:a.reduce((x,e)=>x+creditOf(e),0), extra:a.reduce((x,e)=>x+extraOf(e),0)}; }
+
+  function addDrink(ml, originEl, kindOverride){
+    ml = Math.round(Number(ml));
+    if(!ml || ml < 10 || ml > 2000){ toast('10 ~ 2,000 ml 사이로 입력해 줘'); return; }
+    const kind = kindOverride || state.kind;
+    const k = dayKey(new Date());
+    const b = dayStats(k), goalBefore = state.settings.goal + b.extra;
+    const credit = kind === 'alcohol' ? -ml : Math.round(ml * rateOf(kind) / 100);
+    (state.days[k] = state.days[k] || []).push({t:Date.now(), ml, kind, credit, ...(kind.startsWith('c_') ? {name:kindName(kind)} : {})});
+    if(kind !== 'alcohol'){ state.snoozeUntil = 0; state.lastRemindAt = 0; $('banner').hidden = true; }
+    saveDay(k); render();
+    splash(originEl, ml);
+    if(kind === 'alcohol'){ toast(`술 ${fmt(ml)} ml · 물에서 ${fmt(ml)} ml 뺐어, 얼른 채워`); return; }
+    if(b.credit < goalBefore && b.credit + credit >= goalBefore){ toast('목표 달성! 오늘 잔소리는 여기까지'); return; }
+    if(kind !== 'water' && credit < ml){ toast(`${kindName(kind)} ${fmt(ml)} ml · ${fmt(credit)} ml만 인정, 물도 마셔`); return; }
+    toast(`+${fmt(ml)} ml · ${PRAISE[Math.floor(Math.random()*PRAISE.length)]}`);
+  }
+
+  // drink chips
+  $('kinds').addEventListener('click', e => { const b = e.target.closest('.kind'); if(!b) return;
+    if(b.dataset.k === '+'){ $('drinks-title').scrollIntoView({behavior: reduceMotion() ? 'auto' : 'smooth', block:'start'}); setTimeout(() => $('drink-name').focus({preventScroll:true}), 350); return; }
+    state.kind = b.dataset.k; render(); });
+
+  // my drinks
+  function addCustom(name, rate){
+    name = String(name||'').trim(); rate = Math.round(Number(rate));
+    if(!name){ toast('음료 이름을 적어 줘'); return false; }
+    if(!(rate >= 0 && rate <= 100)){ toast('인정률은 0 ~ 100 사이로'); return false; }
+    if(allKinds().some(k => k.name === name)){ toast(`${name}${josa(name)} 이미 있어`); return false; }
+    if(customs().length >= 12){ toast('내 음료는 12개까지 만들 수 있어'); return false; }
+    const id = 'c_' + Date.now().toString(36);
+    state.kind = id;
+    setSetting({drinks:[...customs(), {id, name, rate}]});
+    toast(`${name} 추가 완료 · 위에서 바로 고를 수 있어`);
+    return true;
+  }
+  $('drink-add').addEventListener('submit', e => { e.preventDefault(); if(addCustom($('drink-name').value, $('drink-rate').value)){ $('drink-name').value=''; $('drink-rate').value=90; } });
+  $('drink-suggest').addEventListener('click', e => { const b = e.target.closest('button'); if(b) addCustom(b.dataset.n, b.dataset.r); });
+  $('drink-rows').addEventListener('click', e => { const b = e.target.closest('button[data-del]'); if(!b) return;
+    const id = b.dataset.del; if(state.kind === id) state.kind = 'water';
+    setSetting({drinks:customs().filter(c => c.id !== id)}); toast('음료를 지웠어. 지난 기록은 그대로 남아'); });
+  $('drink-rows').addEventListener('change', e => { const row = e.target.closest('.drink-row'); if(!row) return;
+    const id = row.dataset.id, [n, r] = row.querySelectorAll('input');
+    const name = n.value.trim(), rate = Math.round(Number(r.value));
+    if(!name || !(rate >= 0 && rate <= 100)){ toast('이름과 0 ~ 100 사이 인정률을 적어 줘'); render(); return; }
+    setSetting({drinks:customs().map(c => c.id === id ? {...c, name, rate} : c)}); });
+
+  /* ---------- cup buttons ---------- */
+  function cupHtml(c){
+    const kd = state.kind, r = rateOf(kd);
+    const sub = kd === 'alcohol' ? `<span class="sub">물 −${c.ml} ml</span>` : kd !== 'water' && r < 100 ? `<span class="sub">${Math.round(c.ml*r/100)} ml 인정</span>` : '';
+    return `<button class="cup ${kd==='alcohol'?'alc':''}" data-ml="${c.ml}" aria-label="${esc(c.name)}로 ${esc(kindName(kd))} ${c.ml} ml 기록">
+      <span class="top"><span class="lbl">${esc(c.name)}</span><span class="add" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M6 1.5v9M1.5 6h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span></span>
+      <span class="ml">${c.ml}<small>ml</small></span>${sub}</button>`;
+  }
+
+  /* ---------- splash: a few drops pop out of the + and fade ---------- */
+  const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rnd = (a,b) => a + Math.random()*(b-a);
+  function splash(el, ml){
+    const wv = $('waves'); if(wv){ wv.classList.remove('slosh'); void wv.getBoundingClientRect(); wv.classList.add('slosh'); }
+    if(!el || !el.isConnected || reduceMotion() || !el.animate) return;
+    const old = el.querySelector(':scope > .fx'); if(old) old.remove();
+    const fx = document.createElement('span'); fx.className = 'fx'; el.appendChild(fx);
+    el.style.zIndex = 5;
+    const src = el.querySelector('.add') || el;
+    const er = el.getBoundingClientRect(), sr = src.getBoundingClientRect();
+    const ox = sr.left - er.left + sr.width/2, oy = sr.top - er.top + (src === el ? 0 : sr.height/2);
+    if(src !== el) src.animate([{transform:'scale(1)'},{transform:'scale(1.25)'},{transform:'scale(1)'}],{duration:320,easing:'cubic-bezier(.3,.7,.3,1.3)'});
+    const n = ml >= 400 ? 6 : 5, g = 1300;
+    for(let i=0;i<n;i++){
+      const d = document.createElement('i'); d.className = 'drop';
+      const size = rnd(5, 8); d.style.width = d.style.height = size+'px';
+      fx.appendChild(d);
+      const ang = (-90 + (i - (n-1)/2) * (64/(n-1)) + rnd(-5,5)) * Math.PI/180;  // evenly fanned upward
+      const v = rnd(330, 380), vx = Math.cos(ang)*v*0.55, vy = Math.sin(ang)*v, T = 0.5;
+      const frames = [];
+      for(let k=0;k<=6;k++){ const t = T*k/6;
+        frames.push({transform:`translate(${ox + vx*t - size/2}px,${oy + vy*t + .5*g*t*t - size/2}px) scale(${1 - k/10})`, opacity: k===0 ? 0 : 1 - (k/6)**2, offset:k/6}); }
+      d.animate(frames,{duration:T*1000, easing:'cubic-bezier(.2,.6,.4,1)', fill:'both'});
+    }
+    setTimeout(() => { fx.remove(); el.style.zIndex = ''; }, 800);
+  }
+  function removeDrink(t){
+    const k = dayKey(new Date());
+    const gone = (state.days[k]||[]).find(e => e.t === t);
+    state.days[k] = (state.days[k]||[]).filter(e => e.t !== t);
+    saveDay(k); render();
+    toast('기록을 지웠어요', gone && (() => {
+      (state.days[k] = state.days[k] || []).push(gone);
+      state.days[k].sort((a,b) => a.t - b.t);
+      saveDay(k); render(); toast('되돌렸어요');
+    }));
+  }
+  let toastTimer;
+  // undo가 있으면 '되돌리기' 버튼을 붙이고 조금 더 오래 보여 줘요
+  function toast(msg, undo){
+    const el=$('toast'); el.textContent=msg; el.classList.toggle('has-undo', !!undo);
+    if(undo){ const b=document.createElement('button'); b.type='button'; b.className='undo'; b.textContent='되돌리기';
+      b.addEventListener('click', () => { el.classList.remove('show'); undo(); }, {once:true}); el.appendChild(b); }
+    el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'), undo ? 4500 : 1800);
+  }
+
+  /* ---------- render ---------- */
+  const PRESET_CUPS = [{name:'종이컵',ml:180},{name:'머그',ml:300},{name:'텀블러',ml:500},{name:'생수병',ml:500}];
+  const cupsOf = s => (Array.isArray(s.cups) && s.cups.length ? s.cups : PRESET_CUPS);
+  // 은/는: 마지막 글자에 받침이 있으면 '은'
+  const josa = w => { const c = String(w).trim().slice(-1).charCodeAt(0); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 ? '은' : '는'; };
+  const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  $('cups').addEventListener('click', e => { const b = e.target.closest('.cup'); if(b) addDrink(b.dataset.ml, b); });
+
+  // cup editor
+  let editing = false;
+  function rowHtml(c){ return `<div class="ce-row"><input type="text" maxlength="12" value="${esc(c.name)}" placeholder="예: 파란 텀블러" aria-label="컵 이름"><input type="number" inputmode="numeric" min="10" max="2000" step="10" value="${c.ml||''}" placeholder="ml" aria-label="용량 (ml)"><button type="button" aria-label="이 컵 지우기">삭제</button></div>`; }
+  function openEditor(){
+    editing = true; $('cup-editor').hidden = false; $('cups-edit-btn').hidden = true;
+    $('cup-rows').innerHTML = cupsOf(state.settings).map(rowHtml).join('');
+    updateAddBtn();
+  }
+  function closeEditor(){ editing = false; $('cup-editor').hidden = true; $('cups-edit-btn').hidden = false; }
+  function updateAddBtn(){ $('cup-add').hidden = $('cup-rows').children.length >= 8; }
+  $('cups-edit-btn').addEventListener('click', openEditor);
+  $('cup-cancel').addEventListener('click', closeEditor);
+  $('cup-add').addEventListener('click', () => { $('cup-rows').insertAdjacentHTML('beforeend', rowHtml({name:'',ml:''})); updateAddBtn(); $('cup-rows').lastElementChild.querySelector('input').focus(); });
+  $('cup-rows').addEventListener('click', e => { if(e.target.closest('button')){ e.target.closest('.ce-row').remove(); updateAddBtn(); } });
+  $('cup-save').addEventListener('click', () => {
+    const cups = [];
+    for(const row of $('cup-rows').children){
+      const [nameEl, mlEl] = row.querySelectorAll('input');
+      const name = nameEl.value.trim(), ml = Math.round(Number(mlEl.value));
+      if(!name && !mlEl.value) continue;
+      if(!ml || ml < 10 || ml > 2000){ mlEl.focus(); toast('용량은 10 ~ 2,000 ml 사이로 적어 주세요'); return; }
+      cups.push({name: name || '내 컵', ml});
+    }
+    if(!cups.length){ toast('컵을 하나 이상 남겨 주세요'); return; }
+    const patch = {cups};
+    if(!cups.some(c => c.ml === state.settings.cup)) patch.cup = cups[0].ml;
+    closeEditor(); setSetting(patch); toast('내 컵을 저장했어요');
+  });
+  $('custom-form').addEventListener('submit', e => { e.preventDefault(); addDrink($('custom-ml').value, e.submitter || $('custom-form').querySelector('button')); $('custom-ml').value=''; });
+  $('log').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if(b) removeDrink(Number(b.dataset.t)); });
+
+  let lastCupSig = '';
+  function render(){
+    const now = new Date(), k = dayKey(now), s = state.settings;
+    const entries = (state.days[k]||[]).slice().sort((a,b)=>b.t-a.t);
+    const st = dayStats(k), total = st.credit, goalEff = s.goal + st.extra;
+    $('today-label').textContent = `${now.getMonth()+1}월 ${now.getDate()}일 ${DAYS[now.getDay()]}요일`;
+
+    // cylinder scale: max = goal * 1.25 rounded to 500
+    const max = Math.ceil(goalEff*1.25/500)*500;
+    const frac = Math.max(0, Math.min(1, total/max)), wEl = $('water');
+    wEl.style.transform = `translateY(${(100 - frac*93).toFixed(2)}px)`; wEl.style.opacity = total > 0 ? 1 : 0;
+    const tb = v => ((16 + v/max*93)/116*100).toFixed(2); // tick position: glass base is 16 of 116 units
+    let ticks = '';
+    for(let v=500; v<=max; v+=500) if(Math.abs(v-goalEff) > max*0.06) ticks += `<div class="tick" style="bottom:${tb(v)}%"><i></i>${v>=1000?(v/1000)+'L':v}</div>`;
+    ticks += `<div class="tick goal" style="bottom:${tb(goalEff)}%"><i></i>목표</div>`;
+    $('ticks').innerHTML = ticks;
+
+    $('total').textContent = fmt(total);
+    const pct = Math.max(0, Math.round(total/goalEff*100));
+    $('pct').textContent = `목표 ${fmt(goalEff)} ml의 ${pct}%`;
+    $('pct').classList.toggle('done', total >= goalEff);
+    const alcMl = (state.days[k]||[]).filter(e => e.kind === 'alcohol').reduce((a,e)=>a+e.ml,0);
+    $('alc-note').hidden = !alcMl; $('alc-note').textContent = `술 때문에 ${fmt(alcMl)} ml 빠졌어`;
+    if(!allKinds().some(x => x.id === state.kind)) state.kind = 'water';
+    $('kinds').innerHTML = allKinds().map(x => `<button class="kind ${x.id==='alcohol'?'alc':''}" role="radio" data-k="${x.id}" aria-checked="${x.id===state.kind}">${esc(x.name)}</button>`).join('') + `<button class="kind more" data-k="+" aria-label="내 음료 추가">+ 음료</button>`;
+    { const kc = $('kinds'), act = kc.querySelector('[aria-checked="true"]');
+      if(act){ const l = act.offsetLeft - kc.offsetLeft, r = l + act.offsetWidth; if(l < kc.scrollLeft) kc.scrollLeft = l - 8; else if(r > kc.scrollLeft + kc.clientWidth) kc.scrollLeft = r - kc.clientWidth + 24; } }
+    const rowsEl = $('drink-rows');
+    if(!rowsEl.contains(document.activeElement)){
+      rowsEl.innerHTML = customs().length ? customs().map(c => `<div class="drink-row" data-id="${c.id}"><input type="text" maxlength="10" value="${esc(c.name)}" aria-label="음료 이름"><input type="number" inputmode="numeric" min="0" max="100" step="5" value="${c.rate}" aria-label="${esc(c.name)} 인정률 (%)"><button type="button" data-del="${c.id}" aria-label="${esc(c.name)} 지우기">삭제</button></div>`).join('')
+        : '<p class="empty-note" style="margin:0">아직 없어요. 아래에서 이름과 인정률을 적거나, 자주 마시는 음료를 눌러 바로 추가하세요.</p>';
+    }
+    $('drink-suggest').innerHTML = SUGGEST.filter(x => !allKinds().some(k => k.name === x.name)).map(x => `<button type="button" data-n="${x.name}" data-r="${x.rate}">+ ${x.name}<b>${x.rate}%</b></button>`).join('');
+    const kh = $('kind-hint');
+    kh.hidden = state.kind === 'water';
+    kh.innerHTML = state.kind === 'alcohol' ? '<b>술은 마신 만큼 물에서 빠져요.</b> 알코올이 수분을 빼앗거든요.' : `${esc(kindName(state.kind))}${josa(kindName(state.kind))} 마신 양의 ${rateOf(state.kind)}%만 물로 인정돼요.`;
+    ['coffee','tea','milk','juice'].forEach(id => { const el = $('rate-'+id); if(document.activeElement !== el) el.value = rateOf(id); });
+    // cups
+    const cups = cupsOf(s);
+    const cupSig = JSON.stringify([cups, state.kind, s.rates, s.drinks]);
+    if(cupSig !== lastCupSig) $('cups').innerHTML = cups.map(cupHtml).join(''); lastCupSig = cupSig;
+    const sel = cups.find(c => c.ml === s.cup) || cups[0];
+    $('cup-default').innerHTML = cups.map((c,i) => `<option value="${i}" ${c===sel?'selected':''}>${esc(c.name)} · ${c.ml} ml</option>`).join('');
+
+    const left = goalEff - total;
+    $('remain').textContent = left > 0 ? `${fmt(left)} ml 남았어요 · ${sel.name} ${Math.ceil(left/sel.ml)}잔 더` : '목표 달성! 오늘 잔소리는 여기까지';
+
+    $('count').textContent = entries.length ? `${entries.length}회` : '';
+    $('log').innerHTML = entries.length ? entries.map(e => { const d=new Date(e.t);
+      return `<li><span class="t">${pad(d.getHours())}:${pad(d.getMinutes())}</span><span class="a">${e.kind && e.kind!=='water' ? `<span class="kd">${esc(e.name || kindName(e.kind))}</span>` : ''}${fmt(e.ml)} ml${e.kind==='alcohol' ? `<small class="alc">물 −${fmt(e.ml)} ml</small>` : e.kind && e.kind!=='water' && creditOf(e)!==e.ml ? `<small>${fmt(creditOf(e))} ml 인정</small>` : ''}</span><button data-t="${e.t}" aria-label="${fmt(e.ml)} ml 기록 지우기">지우기</button></li>`; }).join('')
+      : `<li class="empty" style="display:block;border:0">아직 한 모금도 안 마셨지? 컵 버튼 눌러서 첫 잔부터 기록해.</li>`;
+
+    // week
+    const days = [];
+    for(let i=6;i>=0;i--){ const d=new Date(now); d.setDate(d.getDate()-i); const key=dayKey(d);
+      const ds = dayStats(key); days.push({d, key, ml:ds.credit, goal:s.goal + ds.extra}); }
+    const wmax = Math.max(s.goal*1.2, ...days.map(x=>x.ml));
+    const H = 100; // bar area % of week height minus labels
+    $('week').innerHTML = `<div class="goal-line" style="bottom:calc(22px + (100% - 40px) * ${s.goal/wmax})"><span>${fmt(s.goal)}</span></div>` +
+      days.map((x,i) => `<div class="bar ${x.ml>=x.goal?'met':''} ${i===6?'today':''}"><em>${x.ml>0?(x.ml/1000).toFixed(1):''}</em><b style="height:calc((100% - 40px) * ${Math.max(0,x.ml)/wmax})"></b><span>${i===6?'오늘':DAYS[x.d.getDay()]}</span></div>`).join('');
+    const logged = days.filter(x=>x.ml>0);
+    $('week-avg').textContent = logged.length ? `기록한 날 평균 ${fmt(Math.round(logged.reduce((a,x)=>a+x.ml,0)/logged.length))} ml` : '';
+
+    // settings controls
+    $('rem-toggle').setAttribute('aria-checked', String(!!s.remOn));
+    $('rem-interval').value = String(s.interval);
+    const presetGoal = ['1500','1800','2000','2500','3000'].includes(String(s.goal));
+    if(document.activeElement !== $('goal-custom')){
+      $('goal').value = presetGoal && !goalCustomOpen ? String(s.goal) : 'custom';
+      $('goal-custom').hidden = presetGoal && !goalCustomOpen;
+      if(!$('goal-custom').hidden) $('goal-custom').value = s.goal;
+    }
+    $('rem-start').value = s.start; $('rem-end').value = s.end;
+    $('rem-sound').checked = !!s.sound;
+    $('banner-drink').textContent = `알았어, ${sel.name} 한 잔 마셨어 (+${sel.ml} ml)`;
+    updateNext();
+    renderHistory();
+  }
+
+  /* ---------- 지난 기록 (달력) ---------- */
+  const H = { y: 0, m: 0, sel: null };
+  function openHistory(){
+    const now = new Date();
+    H.y = now.getFullYear(); H.m = now.getMonth(); H.sel = dayKey(now);
+    $('history').hidden = false; document.documentElement.style.overflow = 'hidden';
+    $('history').scrollTop = 0; renderHistory();
+    setTimeout(() => $('hist-back').focus({preventScroll:true}), 50);
+  }
+  function closeHistory(){
+    if($('history').hidden) return;
+    $('history').hidden = true; document.documentElement.style.overflow = '';
+    $('open-history').focus({preventScroll:true});
+  }
+  // 주소 끝 #history 로 화면을 열고 닫아요 → 폰의 뒤로가기 버튼으로도 닫혀요
+  function syncHash(){ location.hash === '#history' ? openHistory() : closeHistory(); }
+  window.addEventListener('hashchange', syncHash);
+  $('hist-back').addEventListener('click', e => { e.preventDefault(); if(location.hash === '#history') history.back(); else closeHistory(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('history').hidden) $('hist-back').click(); });
+  $('m-prev').addEventListener('click', () => { if(--H.m < 0){ H.m = 11; H.y--; } H.sel = null; renderHistory(); });
+  $('m-next').addEventListener('click', () => { if(++H.m > 11){ H.m = 0; H.y++; } H.sel = null; renderHistory(); });
+  $('cal-grid').addEventListener('click', e => { const b = e.target.closest('.cal-day[data-k]'); if(!b || b.disabled) return; H.sel = b.dataset.k; renderHistory(); });
+
+  function renderHistory(){
+    if($('history').hidden) return;
+    const s = state.settings, now = new Date(), todayK = dayKey(now);
+    const first = new Date(H.y, H.m, 1), daysIn = new Date(H.y, H.m + 1, 0).getDate();
+    const isThisMonth = H.y === now.getFullYear() && H.m === now.getMonth();
+    $('m-label').textContent = `${H.y}년 ${H.m + 1}월`;
+    $('m-next').disabled = isThisMonth || first > now;
+    let cells = '', logged = 0, sum = 0, met = 0;
+    for(let i = 0; i < first.getDay(); i++) cells += '<span class="cal-day empty"></span>';
+    for(let d = 1; d <= daysIn; d++){
+      const k = dayKey(new Date(H.y, H.m, d)), has = (state.days[k] || []).length > 0;
+      const ml = dayStats(k).credit, future = k > todayK;
+      if(has){ logged++; sum += ml; if(ml >= s.goal) met++; }
+      const lv = !has ? 'lv-none' : ml >= s.goal ? 'lv-met' : 'lv-some';
+      const label = `${H.m + 1}월 ${d}일` + (future ? '' : has ? `, ${fmt(ml)} ml${ml >= s.goal ? ', 목표 달성' : ''}` : ', 기록 없음');
+      cells += `<button type="button" class="cal-day${k === todayK ? ' today' : ''}${k === H.sel ? ' sel' : ''}${future ? ' future' : ''}" data-k="${k}" ${future ? 'disabled' : ''} aria-label="${label}" aria-pressed="${k === H.sel}"><span>${d}</span>${future ? '<i></i>' : `<i class="lv ${lv}"></i>`}</button>`;
+    }
+    $('cal-grid').innerHTML = cells;
+    $('m-sum').textContent = logged ? `기록한 ${logged}일 평균 ${fmt(Math.round(sum / logged))} ml · 목표 달성 ${met}일` : '이 달은 기록이 없어요';
+
+    const box = $('hist-day');
+    if(!H.sel){ box.innerHTML = '<p class="muted" style="margin:0;text-align:center;font-size:13px">날짜를 누르면 그날 마신 기록이 보여요.</p>'; return; }
+    const [yy, mm, dd] = H.sel.split('-').map(Number), dt = new Date(yy, mm - 1, dd);
+    const list = (state.days[H.sel] || []).slice().sort((a, b) => a.t - b.t);
+    const total = dayStats(H.sel).credit;
+    const title = `${mm}월 ${dd}일 ${DAYS[dt.getDay()]}요일${H.sel === todayK ? ' (오늘)' : ''}`;
+    box.innerHTML = `<div class="day-head"><h2 style="font-size:17px">${title}</h2>${list.length ? `<span class="day-total${total >= s.goal ? ' met' : ''}">${fmt(total)} ml</span>` : ''}</div>
+      <div class="panel"><ul class="log">${list.length ? list.map(e => { const t = new Date(e.t);
+        return `<li style="grid-template-columns:52px 1fr"><span class="t">${pad(t.getHours())}:${pad(t.getMinutes())}</span><span class="a">${e.kind && e.kind!=='water' ? `<span class="kd">${esc(e.name || kindName(e.kind))}</span>` : ''}${fmt(e.ml)} ml${e.kind==='alcohol' ? `<small class="alc">물 −${fmt(e.ml)} ml</small>` : e.kind && e.kind!=='water' && creditOf(e)!==e.ml ? `<small>${fmt(creditOf(e))} ml 인정</small>` : ''}</span></li>`; }).join('')
+        : '<li class="empty" style="display:block;border:0">이날은 기록이 없어요.</li>'}</ul></div>`;
+  }
+
+  /* ---------- settings ---------- */
+  function setSetting(patch){ Object.assign(state.settings, patch); saveSettings(); render(); }
+  $('rem-toggle').addEventListener('click', () => { const on = !state.settings.remOn; setSetting({remOn:on}); primeAudio(); toast(on?'알림을 켰어요':'알림을 껐어요'); });
+  $('rem-interval').addEventListener('change', e => setSetting({interval:Number(e.target.value)}));
+  $('cup-default').addEventListener('change', e => { const c = cupsOf(state.settings)[Number(e.target.value)]; if(c) setSetting({cup:c.ml}); });
+  let goalCustomOpen = false;
+  $('goal').addEventListener('change', e => {
+    if(e.target.value === 'custom'){ goalCustomOpen = true; $('goal-custom').hidden = false; $('goal-custom').value = state.settings.goal; $('goal-custom').focus(); return; }
+    goalCustomOpen = false; setSetting({goal:Number(e.target.value)});
+  });
+  $('goal-custom').addEventListener('change', e => {
+    const v = Math.round(Number(e.target.value) / 50) * 50;
+    if(!(v >= 500 && v <= 6000)){ toast('500 ~ 6,000 ml 사이로 적어 줘'); e.target.value = state.settings.goal; return; }
+    e.target.value = v; e.target.blur(); setSetting({goal:v}); toast(`하루 목표 ${fmt(v)} ml로 바꿨어`);
+  });
+  ['coffee','tea','milk','juice'].forEach(id => $('rate-'+id).addEventListener('change', e => {
+    const v = Math.round(Number(e.target.value));
+    if(!(v >= 0 && v <= 100)){ toast('0 ~ 100 사이로 적어 줘'); e.target.value = rateOf(id); return; }
+    setSetting({rates:{...DEFAULT_RATES, ...(state.settings.rates||{}), [id]:v}});
+  }));
+  $('rem-start').addEventListener('change', e => e.target.value && setSetting({start:e.target.value}));
+  $('rem-end').addEventListener('change', e => e.target.value && setSetting({end:e.target.value}));
+  $('rem-sound').addEventListener('change', e => { setSetting({sound:e.target.checked}); primeAudio(); });
+
+  /* ---------- reminders ---------- */
+  const toMin = hhmm => { const [h,m]=hhmm.split(':').map(Number); return h*60+m; };
+  function lastDrinkTime(){
+    let last = 0; Object.values(state.days).forEach(a => a.forEach(e => { if(e.kind !== 'alcohol' && e.t>last) last=e.t; })); return last;
+  }
+  function nextDue(){
+    const s = state.settings; if(!s.remOn) return null;
+    const now = Date.now();
+    let base = Math.max(lastDrinkTime(), state.lastRemindAt, pageOpenedAt);
+    let due = state.snoozeUntil || base + s.interval*60000;
+    // clamp into active hours
+    const d = new Date(due), mins = d.getHours()*60 + d.getMinutes();
+    const st = toMin(s.start), en = toMin(s.end);
+    if(mins < st){ d.setHours(Math.floor(st/60), st%60, 0, 0); due = d.getTime(); }
+    else if(mins > en){ d.setDate(d.getDate()+1); d.setHours(Math.floor(st/60), st%60, 0, 0); due = d.getTime(); }
+    return Math.max(due, now - 1);
+  }
+  const pageOpenedAt = Date.now();
+  function updateNext(){
+    const due = nextDue();
+    if(!due){ $('next-at').textContent = '꺼짐'; return; }
+    const d = new Date(due), mins = Math.max(0, Math.round((due - Date.now())/60000));
+    const sameDay = dayKey(d) === dayKey(new Date());
+    $('next-at').textContent = `${sameDay?'':'내일 '}${pad(d.getHours())}:${pad(d.getMinutes())}` + (sameDay ? ` · ${mins}분 뒤` : '');
+  }
+  function fire(){
+    state.lastRemindAt = Date.now(); state.snoozeUntil = 0;
+    const last = lastDrinkTime();
+    const ago = last ? Math.round((Date.now()-last)/60000) : null;
+    $('banner-sub').textContent = ago != null && dayKey(new Date(last)) === dayKey(new Date())
+      ? `마지막으로 마신 지 ${ago >= 60 ? Math.floor(ago/60)+'시간 '+(ago%60?ago%60+'분':'') : ago+'분'} 지났어요.`
+      : '오늘 아직 한 잔도 안 마셨잖아. 지금 한 컵 마셔.';
+    $('banner').hidden = false;
+    if(state.settings.sound) chime();
+    blinkTitle();
+    try{ if('Notification' in window && Notification.permission === 'granted') new Notification('물 좀 마셔!', {body:$('banner-sub').textContent}); }catch(e){}
+  }
+  $('banner-drink').addEventListener('click', () => addDrink((cupsOf(state.settings).find(c => c.ml === state.settings.cup) || cupsOf(state.settings)[0]).ml, null, 'water'));
+  $('banner-snooze').addEventListener('click', () => { state.snoozeUntil = Date.now() + 10*60000; $('banner').hidden = true; updateNext(); toast('딱 10분이다. 또 말할 거야'); });
+
+  setInterval(() => {
+    const due = nextDue();
+    if(due && Date.now() >= due && $('banner').hidden) fire();
+    updateNext();
+    // day rollover
+    const k = dayKey(new Date()); if(k !== lastRenderedDay){ lastRenderedDay = k; render(); }
+  }, 15000);
+  let lastRenderedDay = dayKey(new Date());
+
+  // sound
+  let ctx = null;
+  function primeAudio(){ try{ ctx = ctx || new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); }catch(e){} }
+  document.addEventListener('pointerdown', primeAudio, {once:true});
+  function chime(){
+    if(!ctx) return;
+    try{ [880, 1174.7, 1568].forEach((f,i) => { const o=ctx.createOscillator(), g=ctx.createGain(), t=ctx.currentTime+i*0.16;
+      o.type='sine'; o.frequency.value=f; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.25,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.5);
+      o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+0.55); }); }catch(e){}
+  }
+  let blinkTimer = null; const baseTitle = document.title;
+  function blinkTitle(){ clearInterval(blinkTimer); let n=0; blinkTimer = setInterval(() => { document.title = n++%2 ? baseTitle : '물 좀 마셔!'; if(n>20 || !document.hidden&&n>4){ clearInterval(blinkTimer); document.title = baseTitle; } }, 1000); }
+
+  // browser notifications (only where the frame allows it)
+  try{
+    if('Notification' in window && Notification.permission === 'default'){
+      $('notif-btn').hidden = false;
+      $('notif-btn').addEventListener('click', async () => {
+        try{ const p = await Notification.requestPermission(); $('notif-btn').hidden = true; toast(p==='granted'?'브라우저 알림을 허용했어요':'화면 안 알림과 소리로 알려 드릴게요'); }
+        catch(e){ $('notif-btn').hidden = true; toast('화면 안 알림과 소리로 알려 드릴게요'); }
+      });
+    }
+  }catch(e){}
+
+  connect();
+})();
+</script>

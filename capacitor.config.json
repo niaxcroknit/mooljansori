@@ -1,0 +1,20 @@
+{
+  "appId": "com.nia.mooljansori",
+  "appName": "물잔소리",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#EEF3FB",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DEFAULT"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_glass",
+      "iconColor": "#3F78DC"
+    }
+  }
+}

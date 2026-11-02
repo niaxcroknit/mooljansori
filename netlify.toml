@@ -1,4 +1,0 @@
-# Netlify: 사이트는 web 폴더를 그대로 올려요 (빌드 명령 없음)
-[build]
-  publish = "web"
-  command = ""
